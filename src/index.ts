@@ -19,14 +19,14 @@ const ballsArray = generateBallData(canvasContext, random, numberOfBalls).map((b
 let lastTime = performance.now();
 
 const render = (timestamp = lastTime) => {
-  const deltaTime = timestamp - lastTime;
+  const deltaTime = (timestamp - lastTime) / 1000;
   lastTime = timestamp;
   canvasContext?.clearRect(0, 0, canvas.width, canvas.height);
   ballsArray.forEach((ball: Ball, index: number, selfArray: Ball[]) => {
     ball.draw();
-    ball.animate(selfArray, index, deltaTime / 1000);
+    ball.animate(selfArray, index, deltaTime);
   });
-  // requestAnimationFrame(render);
+  requestAnimationFrame(render);
 };
 
 render();
