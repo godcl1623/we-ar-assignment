@@ -2,8 +2,8 @@ import Random from 'logic/random';
 import { BallAttributes, CanvasContextType } from 'types/global';
 
 export const getCentersDistance = (ballAData: BallAttributes, ballBData: BallAttributes) => {
-  const { xCoordinates: xA, yCoordinates: yA } = ballAData;
-  const { xCoordinates: xB, yCoordinates: yB } = ballBData;
+  const { xCoordinate: xA, yCoordinate: yA } = ballAData;
+  const { xCoordinate: xB, yCoordinate: yB } = ballBData;
   const distanceX = Math.pow(xA - xB, 2);
   const distanceY = Math.pow(yA - yB, 2);
   const centersDistance = Math.sqrt(distanceX + distanceY);
