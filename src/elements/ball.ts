@@ -13,6 +13,7 @@ class Ball {
   private radius: number;
   private xSpeed: number;
   private ySpeed: number;
+  private backgroundColor: string;
 
   constructor(ballAttributes: BallAttributes) {
     this.context = ballAttributes.context;
@@ -21,13 +22,14 @@ class Ball {
     this.yCoordinates = this.correctYCoordinates(ballAttributes.yCoordinates);
     this.xSpeed = ballAttributes.speed;
     this.ySpeed = ballAttributes.speed;
+    this.backgroundColor = 'black';
   }
 
   draw() {
     if (this.context != null) {
       const { minimumX, minimumY, maximumX, maximumY } = this.getContextBoundaries();
       this.context.beginPath();
-      this.context.fillStyle = 'black';
+      this.context.fillStyle = this.backgroundColor;
       this.context.arc(this.xCoordinates, this.yCoordinates, this.radius, 0, 2 * Math.PI, false);
       this.context.fill();
 
@@ -48,6 +50,23 @@ class Ball {
     } else {
       throw new Error('Canvas context is null');
     }
+  }
+
+  getRadius(): number {
+    return this.radius;
+  }
+
+  getCoordinates() {
+    return { x: this.xCoordinates, y: this.yCoordinates };
+  }
+
+  setColor(newColor: string) {
+    this.backgroundColor = newColor;
+  }
+
+  setNewCoordinates(newXCoordinate: number, newYCoordinate: number) {
+    this.xCoordinates = newXCoordinate;
+    this.yCoordinates = newYCoordinate;
   }
 
   private correctXCoordinates(rawXCoordinates: number): number {

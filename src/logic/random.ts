@@ -2,7 +2,7 @@ class Random {
   constructor() {
   };
 
-  private getNumberLessThan(maxValue: number): number {
+  getNumberLessThan(maxValue: number): number {
     return Math.floor(Math.random() * maxValue);
   };
 
