@@ -14,8 +14,8 @@ class Random {
 
   getBallData() {
     const radius = this.getNumberBetween(10, 20);
-    const xCoordinates = this.getNumberLessThan(300);
-    const yCoordinates = this.getNumberLessThan(150);
+    const xCoordinates = this.getNumberLessThan(1000);
+    const yCoordinates = this.getNumberLessThan(500);
     const speed = this.getNumberBetween(2, 4);
     return { radius, xCoordinates, yCoordinates, speed };
   };

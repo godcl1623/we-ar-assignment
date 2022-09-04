@@ -48,14 +48,14 @@ class Ball {
   private correctXCoordinates(rawXCoordinates: number): number {
     let result = rawXCoordinates;
     if (rawXCoordinates < this.radius) result = this.radius;
-    else if (rawXCoordinates + this.radius > 300) result = 300 - this.radius;
+    else if (rawXCoordinates + this.radius > 1000) result = 1000 - this.radius;
     return result;
   }
 
   private correctYCoordinates(rawYCoordinates: number): number {
     let result = rawYCoordinates;
     if (rawYCoordinates < this.radius) result = this.radius;
-    else if (rawYCoordinates + this.radius > 150) result = 150 - this.radius;
+    else if (rawYCoordinates + this.radius > 500) result = 500 - this.radius;
     return result;
   }
 
@@ -97,8 +97,8 @@ class Ball {
   }
 
   private getContextBoundaries() {
-    const contextWidth = 300;
-    const contextHeight = 150;
+    const contextWidth = 1000;
+    const contextHeight = 500;
     const minimumX = this.radius;
     const maximumX = contextWidth - this.radius;
     const minimumY = this.radius;
