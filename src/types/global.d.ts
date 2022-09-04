@@ -2,8 +2,8 @@ export type CanvasContextType = CanvasRenderingContext2D | null;
 
 export interface BallAttributes {
   context: CanvasContextType;
-  xCoordinates: number;
-  yCoordinates: number;
+  xCoordinate: number;
+  yCoordinate: number;
   radius: number;
   speed: number;
 }

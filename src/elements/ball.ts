@@ -1,61 +1,67 @@
 import { BallAttributes, CanvasContextType } from 'types/global';
-import { getCentersDistance } from 'utils';
+import { getCentersDistance } from 'utils/functions';
+import {
+  isFrontSmallerThanRear,
+  isFrontBiggerThanRear,
+  isFrontSimilarSmaller,
+  isFrontSimilarBigger,
+  isFrontOrRear,
+  isNotExact,
+} from 'utils/capsuledConditions';
+
+interface CanvasBoundaries {
+  minimumX: number;
+  maximumX: number;
+  minimumY: number;
+  maximumY: number;
+}
 
 class Ball {
   private context: CanvasContextType;
-  private xCoordinates: number;
-  private yCoordinates: number;
+  private xCoordinate: number;
+  private yCoordinate: number;
   private radius: number;
   private xSpeed: number;
   private ySpeed: number;
   private movementAngle: number;
-  private movementAngleX: number;
-  private movementAngleY: number;
+  private xMovementWithAngle: number;
+  private yMovementWithAngle: number;
   private backgroundColor: string;
 
-  getAttributes(): BallAttributes {
+  getBallAttributes() {
     return {
       context: this.context,
-      xCoordinates: this.xCoordinates,
-      yCoordinates: this.yCoordinates,
+      xCoordinate: this.xCoordinate,
+      yCoordinate: this.yCoordinate,
       radius: this.radius,
       speed: this.xSpeed,
     };
   }
 
-  setColor(newColor: string) {
-    this.backgroundColor = newColor;
-  }
-
-  setNewCoordinates(newXCoordinate: number, newYCoordinate: number) {
-    this.xCoordinates = newXCoordinate;
-    this.yCoordinates = newYCoordinate;
-  }
-
   constructor(ballAttributes: BallAttributes) {
     this.context = ballAttributes.context;
     this.radius = ballAttributes.radius;
-    this.xCoordinates = this.correctXCoordinates(ballAttributes.xCoordinates);
-    this.yCoordinates = this.correctYCoordinates(ballAttributes.yCoordinates);
+    this.xCoordinate = this.correctXCoordinate(ballAttributes.xCoordinate);
+    this.yCoordinate = this.correctYCoordinate(ballAttributes.yCoordinate);
     this.xSpeed = ballAttributes.speed;
     this.ySpeed = ballAttributes.speed;
     this.movementAngle = Math.random() * (Math.PI * 2);
-    this.movementAngleX = this.xSpeed * Math.cos(this.movementAngle);
-    this.movementAngleY = this.ySpeed * Math.sin(this.movementAngle);
+    this.xMovementWithAngle = this.xSpeed * Math.cos(this.movementAngle);
+    this.yMovementWithAngle = this.ySpeed * Math.sin(this.movementAngle);
     this.backgroundColor = 'black';
   }
 
-  private correctXCoordinates(rawXCoordinates: number): number {
+  private correctXCoordinate(rawXCoordinates: number) {
     let result = rawXCoordinates;
-    if (rawXCoordinates < this.radius) result = this.radius;
-    else if (rawXCoordinates + this.radius > 1000) result = 1000 - this.radius;
+    if (isFrontSmallerThanRear(rawXCoordinates, this.radius)) result = this.radius;
+    else if (isFrontBiggerThanRear(rawXCoordinates + this.radius, 1000)) result = 1000 - this.radius;
     return result;
   }
 
-  private correctYCoordinates(rawYCoordinates: number): number {
+  private correctYCoordinate(rawYCoordinates: number) {
     let result = rawYCoordinates;
-    if (rawYCoordinates < this.radius) result = this.radius;
-    else if (rawYCoordinates + this.radius > 500) result = 500 - this.radius;
+    if (isFrontSmallerThanRear(rawYCoordinates, this.radius)) result = this.radius;
+    else if (isFrontBiggerThanRear(rawYCoordinates + this.radius, 500)) result = 500 - this.radius;
     return result;
   }
 
@@ -63,7 +69,7 @@ class Ball {
     if (this.context != null) {
       this.context.beginPath();
       this.context.fillStyle = this.backgroundColor;
-      this.context.arc(this.xCoordinates, this.yCoordinates, this.radius, 0, 2 * Math.PI, false);
+      this.context.arc(this.xCoordinate, this.yCoordinate, this.radius, 0, 2 * Math.PI, false);
       this.context.fill();
     } else {
       throw new Error('Canvas context is null');
@@ -71,58 +77,77 @@ class Ball {
   }
 
   animate(ballList: Ball[], currentIndex: number, deltaTime: number) {
-    this.move(deltaTime);
-    this.reflectWall(deltaTime);
-    this.reflectOtherBall(ballList, currentIndex, deltaTime);
+    this.moveBall(deltaTime);
+    this.reflectOnWall(deltaTime);
+    this.reflectOnOtherBalls(ballList, currentIndex, deltaTime);
   }
 
-  private move(deltaTime: number) {
-    this.xCoordinates += this.movementAngleX * deltaTime;
-    this.yCoordinates += this.movementAngleY * deltaTime;
+  private moveBall(deltaTime: number) {
+    this.xCoordinate += this.xMovementWithAngle * deltaTime;
+    this.yCoordinate += this.yMovementWithAngle * deltaTime;
   }
 
-  private reflectWall(deltaTime: number) {
-    const { minimumX, minimumY, maximumX, maximumY } = this.getContextBoundaries();
-    if (this.xCoordinates <= minimumX || this.xCoordinates >= maximumX) {
-      if (this.xCoordinates - this.movementAngleX <= minimumX) this.xCoordinates = minimumX;
-      else if (this.xCoordinates - this.movementAngleX >= maximumX) this.xCoordinates = maximumX;
-      this.movementAngleX *= -1;
-      this.xCoordinates += this.movementAngleX * deltaTime;
-    } else if (this.yCoordinates <= minimumY || this.yCoordinates >= maximumY) {
-      if (this.yCoordinates - this.movementAngleY <= minimumY) this.yCoordinates = minimumY;
-      else if (this.yCoordinates - this.movementAngleY >= maximumY) this.yCoordinates = maximumY;
-      this.movementAngleY *= -1;
-      this.yCoordinates += this.movementAngleY * deltaTime;
+  private reflectOnWall(deltaTime: number) {
+    const { minimumX, minimumY, maximumX, maximumY } = this.getCanvasBoundaries();
+    if (
+      isFrontOrRear(
+        isFrontSimilarSmaller(this.xCoordinate, minimumX),
+        isFrontSimilarBigger(this.xCoordinate, maximumX),
+      )
+    ) {
+      if (isFrontSimilarSmaller(this.xCoordinate - this.xMovementWithAngle, minimumX)) this.xCoordinate = minimumX;
+      else if (isFrontSimilarBigger(this.xCoordinate - this.xMovementWithAngle, maximumX)) this.xCoordinate = maximumX;
+      this.xMovementWithAngle *= -1;
+      this.xCoordinate += this.xMovementWithAngle * deltaTime;
+    } else if (
+      isFrontOrRear(
+        isFrontSimilarSmaller(this.yCoordinate, minimumY),
+        isFrontSimilarBigger(this.yCoordinate, maximumY),
+      )
+    ) {
+      if (isFrontSimilarSmaller(this.yCoordinate - this.yMovementWithAngle, minimumY)) this.yCoordinate = minimumY;
+      else if (isFrontSimilarBigger(this.yCoordinate - this.yMovementWithAngle, maximumY)) this.yCoordinate = maximumY;
+      this.yMovementWithAngle *= -1;
+      this.yCoordinate += this.yMovementWithAngle * deltaTime;
     }
   }
 
-  private getContextBoundaries() {
-    const contextWidth = 1000;
-    const contextHeight = 500;
-    const minimumX = this.radius;
-    const maximumX = contextWidth - this.radius;
-    const minimumY = this.radius;
-    const maximumY = contextHeight - this.radius;
-    return {
-      minimumX,
-      maximumX,
-      minimumY,
-      maximumY,
+  private getCanvasBoundaries() {
+    let result: CanvasBoundaries = {
+      minimumX: 0,
+      maximumX: 0,
+      minimumY: 0,
+      maximumY: 0,
     };
+    if (this.context) {
+      const canvasWidth = this.context.canvas.offsetWidth;
+      const canvasHeight = this.context.canvas.offsetHeight;
+      const minimumX = this.radius;
+      const maximumX = canvasWidth - this.radius;
+      const minimumY = this.radius;
+      const maximumY = canvasHeight - this.radius;
+      result = {
+        minimumX,
+        maximumX,
+        minimumY,
+        maximumY,
+      };
+    }
+    return result;
   }
 
-  private reflectOtherBall(ballList: Ball[], currentIndex: number, deltaTime: number) {
+  private reflectOnOtherBalls(ballList: Ball[], currentIndex: number, deltaTime: number) {
     ballList.forEach((otherBall: Ball, index: number) => {
-      if (index !== currentIndex) {
-        const thisBallAttributes = this.getAttributes();
-        const otherBallAttributes = otherBall.getAttributes();
+      if (isNotExact(index, currentIndex)) {
+        const thisBallAttributes = this.getBallAttributes();
+        const otherBallAttributes = otherBall.getBallAttributes();
         const centerDistance = getCentersDistance(thisBallAttributes, otherBallAttributes);
         const radiuses = thisBallAttributes.radius + otherBallAttributes.radius;
-        if (centerDistance < radiuses) {
-          this.movementAngleX *= -1;
-          this.xCoordinates += this.movementAngleX * deltaTime;
-          this.movementAngleY *= -1;
-          this.yCoordinates += this.movementAngleY * deltaTime;
+        if (isFrontSmallerThanRear(centerDistance, radiuses)) {
+          this.xMovementWithAngle *= -1;
+          this.xCoordinate += this.xMovementWithAngle * deltaTime;
+          this.yMovementWithAngle *= -1;
+          this.yCoordinate += this.yMovementWithAngle * deltaTime;
         }
       }
     });

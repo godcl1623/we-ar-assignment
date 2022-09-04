@@ -2,14 +2,15 @@ import Canvas from 'elements/canvas';
 import Ball from 'elements/ball';
 import Random from 'logic/random';
 import { BallAttributes } from 'types/global';
-import { generateBallData } from 'utils';
+import { generateBallData } from 'utils/functions';
 import 'style/index.css';
 
 const main = document.querySelector('#root');
+
 const canvasInstance = new Canvas();
 const canvas = canvasInstance.makeCanvas();
+const canvasContext = canvasInstance.provideContext();
 main?.appendChild(canvas);
-const canvasContext = canvas.getContext('2d');
 const random = new Random();
 const numberOfBalls = random.getNumberBetween(10, 20);
 const ballsArray = generateBallData(canvasContext, random, numberOfBalls).map((ballData: BallAttributes) => {
