@@ -70,29 +70,29 @@ class Ball {
     }
   }
 
-  animate(ballList: Ball[], currentIndex: number) {
-    this.move();
-    this.reflectWall();
-    this.reflectOtherBall(ballList, currentIndex);
+  animate(ballList: Ball[], currentIndex: number, deltaTime: number) {
+    this.move(deltaTime);
+    this.reflectWall(deltaTime);
+    this.reflectOtherBall(ballList, currentIndex, deltaTime);
   }
 
-  private move() {
-    this.xCoordinates += this.movementAngleX;
-    this.yCoordinates += this.movementAngleY;
+  private move(deltaTime: number) {
+    this.xCoordinates += this.movementAngleX * deltaTime;
+    this.yCoordinates += this.movementAngleY * deltaTime;
   }
 
-  private reflectWall() {
+  private reflectWall(deltaTime: number) {
     const { minimumX, minimumY, maximumX, maximumY } = this.getContextBoundaries();
     if (this.xCoordinates <= minimumX || this.xCoordinates >= maximumX) {
       if (this.xCoordinates - this.movementAngleX <= minimumX) this.xCoordinates = minimumX;
       else if (this.xCoordinates - this.movementAngleX >= maximumX) this.xCoordinates = maximumX;
       this.movementAngleX *= -1;
-      this.xCoordinates += this.movementAngleX;
+      this.xCoordinates += this.movementAngleX * deltaTime;
     } else if (this.yCoordinates <= minimumY || this.yCoordinates >= maximumY) {
       if (this.yCoordinates - this.movementAngleY <= minimumY) this.yCoordinates = minimumY;
       else if (this.yCoordinates - this.movementAngleY >= maximumY) this.yCoordinates = maximumY;
       this.movementAngleY *= -1;
-      this.yCoordinates += this.movementAngleY;
+      this.yCoordinates += this.movementAngleY * deltaTime;
     }
   }
 
@@ -111,7 +111,7 @@ class Ball {
     };
   }
 
-  private reflectOtherBall(ballList: Ball[], currentIndex: number) {
+  private reflectOtherBall(ballList: Ball[], currentIndex: number, deltaTime: number) {
     ballList.forEach((otherBall: Ball, index: number) => {
       if (index !== currentIndex) {
         const thisBallAttributes = this.getAttributes();
@@ -120,9 +120,9 @@ class Ball {
         const radiuses = thisBallAttributes.radius + otherBallAttributes.radius;
         if (centerDistance < radiuses) {
           this.movementAngleX *= -1;
-          this.xCoordinates += this.movementAngleX;
+          this.xCoordinates += this.movementAngleX * deltaTime;
           this.movementAngleY *= -1;
-          this.yCoordinates += this.movementAngleY;
+          this.yCoordinates += this.movementAngleY * deltaTime;
         }
       }
     });

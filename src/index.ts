@@ -8,33 +8,24 @@ import 'style/index.css';
 const main = document.querySelector('#root');
 const canvasInstance = new Canvas();
 const canvas = canvasInstance.makeCanvas();
+main?.appendChild(canvas);
 const canvasContext = canvas.getContext('2d');
 const random = new Random();
 const numberOfBalls = random.getNumberBetween(10, 20);
 const ballsArray = generateBallData(canvasContext, random, numberOfBalls).map((ballData: BallAttributes) => {
   return new Ball(ballData);
 });
+let lastTime = performance.now();
 
-const animateFrame = (animateTarget: (() => void)) => {
-
-}
-
-const startAnimating = (animateTarget: (() => void), fps: number) => {
-  const fpsInterval = 1000/fps;
-  const startTime = window.performance.now();
-}
-
-const render = () => {
-  main?.appendChild(canvas);
+const render = (timestamp = lastTime) => {
+  const deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
   canvasContext?.clearRect(0, 0, canvas.width, canvas.height);
   ballsArray.forEach((ball: Ball, index: number, selfArray: Ball[]) => {
     ball.draw();
-    ball.animate(selfArray, index);
+    ball.animate(selfArray, index, deltaTime / 1000);
   });
   // requestAnimationFrame(render);
-  // setTimeout(() => {
-  //   requestAnimationFrame(render);
-  // }, 1000 / 60);
 };
 
 render();
