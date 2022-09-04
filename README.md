@@ -4,10 +4,6 @@
 
 <br />
 
-----
-
-<br />
-
 ## 목차
 
 - [we-ar-assignment](#we-ar-assignment)
